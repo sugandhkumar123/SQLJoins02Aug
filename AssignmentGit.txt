@@ -1,0 +1,12 @@
+﻿1.Created a Folder named "Assignment Technical" and pasted the file "AssignmentSQLQueries.sql".
+2.Click the above address bar and type "cmd".
+3.Initialize the repository by using the command "git init".
+4.Added the file "AssignmentSQLQueries.sql" by using the command "git add AssignmentSQLQueries.sql".
+5.Check whether the file is added using the command "git status".
+6.Then Commit the file to git by using "git commit -m "first commit".
+7.Created a new remote repository named "SQLJoins02Aug" in github by clicking new->Repository name(Adding name to repository)->create new repository.
+8.Adding remote origins using the command "git remote add origin https://github.com/sugandhkumar123/SQLJoins02Aug.git".
+9.Then push the repository to remote repository using the command "git push origin master".The file was uploaded to github.
+10.Then I add comment inside SQL file (i.e Submitted on) by clicking on the AssignmentSQLQueries.sql there will be option for edit the file then I add the comment inside SQL File.
+11.By using the "git pull origin master" pull the updated files from remote repository to local repository.
+12.Then updated file has been pulled to the local repository.
