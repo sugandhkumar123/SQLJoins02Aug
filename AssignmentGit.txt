@@ -1,4 +1,8 @@
-﻿1.Created a Folder named "Assignment Technical" and pasted the file "AssignmentSQLQueries.sql".
+## Assignment on Git
+##Submitted by: Sugandh Kumar
+##Submitted on: 03/08/2021
+
+1.Created a Folder named "Assignment Technical" and pasted the file "AssignmentSQLQueries.sql".
 2.Click the above address bar and type "cmd".
 3.Initialize the repository by using the command "git init".
 4.Added the file "AssignmentSQLQueries.sql" by using the command "git add AssignmentSQLQueries.sql".
