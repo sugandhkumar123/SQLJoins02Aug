@@ -1,5 +1,6 @@
 -- Assignment on SQL Queries :-
 -- Submitted by: Sugandh Kumar
+-- Submitted on: 03/08/2021
 
 use pubs
 
