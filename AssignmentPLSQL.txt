@@ -1,0 +1,211 @@
+-- Assignment on PLSQL
+--Submitted By: Sugandh Kumar
+--Submitted On: 04/08/2021
+
+create database EmployeeDetails;
+
+use EmployeeDetails
+
+-- Create the following tables
+/* Employee(id-identity starts in 100 inc by 1,
+Name,age, phone cannot be null, gender)
+Salary(id-identity starts at 1 increments by 100,
+Basic,HRA,DA,deductions)
+EmployeeSalary(transaction_number int,
+employee_id-reference Employee's Id 
+Salary_id reference Salary Id,
+Date)
+PS - In the emeployee salary table transaction number is the primary key
+the combination of employee_id, salary_id and date should always be unique */
+
+create table Employee(
+emp_id int identity(100,1) primary key,
+emp_name varchar(30) not null,
+age int not null,
+phone_no char(10) not null,
+gender varchar(5));
+
+create table Salary(
+sal_id int identity(1,100) primary key,
+basic_sal float,
+hra float,
+da float,
+deduction float);
+
+create table EmployeeSalary(
+transaction_number int primary key,
+emp_id int references Employee(emp_id),
+sal_id int references Salary(sal_id),
+date datetime,
+unique(emp_id,sal_id,date));
+
+--Add a column email-varchar(100) to the employee table
+alter table Employee
+add email varchar(100);
+
+sp_help Employee;
+sp_help Salary;
+sp_help EmployeeSalary;
+
+--Insert few records in all the tables
+insert into Employee(emp_name,age,phone_no,gender,email) values('Sugandh',21,9110192449,'Male','sugandh@gmail.com')
+insert into Employee(emp_name,age,phone_no,gender,email) values('Amit',21,9994637446,'Male','amit@gmail.com')
+insert into Employee(emp_name,age,phone_no,gender,email) values('Manthan',21,9564632276,'Male','manthan@gmail.com')
+insert into Employee(emp_name,age,phone_no,gender,email) values('Achal',21,9983432276,'Male','achal@gmail.com')
+insert into Employee(emp_name,age,phone_no,gender,email) values('Satyajeet',21,9956732276,'Male','satyajeet@gmail.com')
+
+insert into Salary(basic_sal,hra,da,deduction) values(11000,7000,2000,1800)
+insert into Salary(basic_sal,hra,da,deduction) values(12000,8000,3000,2800)
+insert into Salary(basic_sal,hra,da,deduction) values(13000,9000,4000,3800)
+insert into Salary(basic_sal,hra,da,deduction) values(14000,10000,5000,4800)
+
+insert into EmployeeSalary(transaction_number,emp_id,sal_id,date) values(200,100,1,'2020-07-26')
+insert into EmployeeSalary(transaction_number,emp_id,sal_id,date) values(201,101,101,'2020-06-26')
+insert into EmployeeSalary(transaction_number,emp_id,sal_id,date) values(202,102,201,'2020-05-26')
+insert into EmployeeSalary(transaction_number,emp_id,sal_id,date) values(203,103,301,'2020-04-26')
+
+/* Create a procedure which will print the total salary of employee by
+taking the employee id and the date
+total = Basic+HRA+DA-deductions */
+create proc total_Sal(@emp_id int,@date date)
+as
+begin
+ select (basic_sal+hra+da-deduction) "Total Salary", emp_name "Nmae" from Employee as em 
+ join EmployeeSalary as ems on em.emp_id=ems.emp_id
+ join Salary as sa on ems.sal_id=sa.sal_id
+ where em.emp_id=@emp_id and ems.date=@date
+end
+
+exec total_Sal 100,'2020-07-26'
+
+/* Create a procudure which will calculate the average salary of an
+employee taking his ID */
+create proc Avgsal(@empid int)
+as
+begin
+ select avg(basic_sal+hra+da-deduction) Average_Salary,emp_name Name from Employee  as em 
+ join EmployeeSalary as ems on em.emp_id=ems.emp_id
+ join Salary as sa on ems.sal_id=sa.sal_id 
+ where em.emp_id=@empid group by emp_name
+end
+
+exec Avgsal 100
+
+/* Create a procedure which will catculate tax payable by employee
+Slabs as follows
+total - 100000 - 0%
+100000 > total < 200000 - 5%
+200000 > total < 350000 - 6%
+total > 350000 - 7.5% */
+
+create proc cal_tax(@empid int)
+as
+begin
+ declare 
+ @total float
+ set @total = (select sum(basic_sal+hra+da-deduction) "Total" from Employee e 
+ join EmployeeSalary es on (e.emp_id=es.emp_id) 
+ join Salary s on (s.sal_id=es.sal_id) where e.emp_id=@empid)
+
+ print 'Tax of '
+ print @empid
+ if @total <100000
+  print @total
+ else if @total >100000 and @total<200000
+  print @total -@total * 5/100
+ else if @total > 200000 and @total<350000
+  print @total -@total * 6/100
+ else if @total > 350000
+  print @total - @total * 7.5/100
+end
+
+exec cal_tax 100
+
+use pubs
+
+--1) Create procedure that will take the author first name and last name
+--and print all the books the author sold 
+
+create proc get_Authorfname_lname(@fname varchar(20),@lname varchar(20))
+as
+
+begin
+
+select title 'Title By author',concat(@fname,' ',@lname) 'Author'from titles t 
+join titleauthor ta on (t.title_id=ta.title_id) 
+where ta.au_id=(select au_id from authors where au_fname=@fname and au_lname=@lname)
+
+end
+
+exec get_Authorfname_lname 'Johnson','White'
+
+-- 2) Print the Author name, Publisher name and the sale amount for every book(use joins)
+
+select concat(au_fname,' ',au_lname) 'Authors name',pub_name 'Publisher name',sum(qty*price) 'Sale of Every Book' from publishers p 
+join titles t on (t.pub_id=p.pub_id) 
+join sales s on (s.title_id=t.title_id) 
+join titleauthor ta on (ta.title_id=t.title_id) 
+join authors a on (ta.au_id=a.au_id) group by au_fname,au_lname,pub_name
+
+--3) Create a account table
+--account number,name, balance, status(open/blocked)(default- open)
+--Create a transaction table
+--tran_id, from_account,to_account,amount,remarks
+
+create table account(acc_no int primary key,name varchar(20) not null,balance float,status varchar(20) default 'open')
+
+create table trans_acc(trans_id int identity(1,1) primary key,f_acc int references account(acc_no),to_acc int references account(acc_no),amount float,remarks varchar(20))
+
+create proc Transact(@f_acc int,@to_acc int,@amount float)
+as
+begin
+begin tran transact
+
+insert into trans_acc values(@f_acc,@to_acc,@amount,'credit')
+update account set balance =balance-@amount where acc_no=@f_acc
+update account set balance =balance + @amount where acc_no=@to_acc
+
+if (((select balance from account where acc_no=@f_acc)>1500) and (select status from account where acc_no=@f_acc)='open')
+ commit
+else
+ rollback
+
+end
+
+exec Transact 1,4,2000
+
+select * from account
+select * from trans_acc
+
+
+--4) If a transaction table is updated with status void update the account table by crediting and debiting the debited and credited amount
+--PS use trigger
+
+create trigger trg_insert_status 
+on trans_acc
+for update
+as
+begin  
+if ((select remarks from inserted)='void')
+ begin
+ update account set balance=balance - (select amount from inserted) where acc_no=(select to_acc from inserted)
+ update account set balance=balance + (select amount from inserted) where acc_no=(select f_acc from inserted)
+ declare 
+ @printf varchar(20),
+ @printto varchar(20)
+ set @printf = concat((select amount from inserted),' credited to ',(select f_acc from inserted))
+ set @printto= concat((select amount from inserted),' debited to ',(select to_acc from inserted))
+ print @printf
+ print @printto
+ end
+else
+ return
+end 
+
+select * from trans_acc
+
+update trans_acc
+set remarks='void' 
+where trans_id=3
+
+
